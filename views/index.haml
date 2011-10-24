@@ -1,0 +1,83 @@
+!!!
+%html{:lang => "en"}
+  %head
+    %meta{:charset => "utf-8"}/
+    %title Soundcloud challenge upload form
+    %script{:src => "http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"}
+    :css
+      #file_type {font-style: italic}
+  %body
+    %input#the-file{:name => "file", :type => "file"}>/
+    \ 
+    %span#file_type
+    %span#upload-status
+    %span#progress
+    %div
+      %p#upload_link{:style => "display:none"}
+        You uploaded the file here:
+        %a#file_link{:href => "#"} Uploaded here
+    #result
+    %form#kokot{:action => "/comment", :method => "POST"}
+      %textarea{:cols => "80", :name => "comment", :rows => "5"}
+          
+      %input{:name => "submit", :type => "Submit", :value => "Mandalo!"}
+    %h3 last uploads
+    %ul#comments
+      - @uploads.each do |file|
+        %li.comment
+          %span
+            #{file.comment}
+          %a{:href=>"/#{file.file_name}"} Uploaded file 
+
+    :javascript
+      document.getElementById('the-file').onchange = function () {
+        var fileInput = document.getElementById('the-file');
+        var file = fileInput.files[0];
+      
+        var xhr = new XMLHttpRequest();
+        xhr.upload.addEventListener('loadstart', onloadstartHandler, false);
+        xhr.upload.addEventListener('progress', onprogressHandler, false);
+        xhr.upload.addEventListener('load', onloadHandler, false);
+        xhr.addEventListener('readystatechange', onreadystatechangeHandler, false);
+        xhr.open('POST', '/', /*async*/ true);
+        xhr.setRequestHeader("Content-Type", "application/octet-stream");
+        //	xhr.setRequestHeader("Content-Type", file.type);
+        xhr.setRequestHeader("X-File-Name", file.name);
+        xhr.send(file); // Simple!
+      
+        function onloadstartHandler(evt) {
+          $('#upload-status').html('Upload started!');
+          $('#file_name').html(file.name);
+          $('#file_type').html(file.type);
+        }
+      
+        function onloadHandler(evt) {
+          $('#upload-status').html('Upload successful!');
+        }
+      
+        function onprogressHandler(evt) {
+          var percent = evt.loaded/evt.total*100;
+          $('#progress').html('Progress: ' + percent + '%');
+        }
+      
+        function onreadystatechangeHandler(evt) {
+          var status = null;
+      
+          try {
+            status = evt.target.status;
+          }
+          catch(e) {
+            return;
+          }
+      
+          // Once the file status is correct and we have the JSON of the file from the server
+          if (status == '201' && evt.target.responseText) {
+            $('#result').html('The server saw it as:' + evt.target.responseText + '');
+            $('#upload_link').css('display','');
+            $('#file_link').attr("href",'/'+file.name);
+            var response=JSON.parse(evt.target.responseText);
+            var hidden_field = $('<input>').attr('type','hidden').attr('name','sha1sum').val(response.filename);
+            hidden_field.appendTo('form#kokot');
+          }
+        }
+      }

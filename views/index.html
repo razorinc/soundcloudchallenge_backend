@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Soundcloud challenge upload form</title>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<style>
+#file_type {font-style: italic}
+</style>
+</head>
+<body>
+
+<input id="the-file" type=file name=file />&nbsp;<span id="file_type"></span><span id="upload-status"></span> <span id="progress"></span>
+<div>
+<p id="upload_link" style="display:none"> You uploaded the file here: <a id="file_link" href="#">Uploaded here</a>
+</div>
+<div id="result"></div>
+
+<form id="kokot" method="POST" action="/comment">
+<textarea name="comment" rows="5" cols="80">
+</textarea>
+<input type="Submit" name="submit" value="Mandalo!"/>
+</form>
+
+<h3>last uploads</h3>
+<ul>
+</ul>
+<script>
+document.getElementById('the-file').onchange = function () {
+  var fileInput = document.getElementById('the-file');
+  var file = fileInput.files[0];
+
+  var xhr = new XMLHttpRequest();
+  xhr.upload.addEventListener('loadstart', onloadstartHandler, false);
+  xhr.upload.addEventListener('progress', onprogressHandler, false);
+  xhr.upload.addEventListener('load', onloadHandler, false);
+  xhr.addEventListener('readystatechange', onreadystatechangeHandler, false);
+  xhr.open('POST', '/', /*async*/ true);
+  xhr.setRequestHeader("Content-Type", "application/octet-stream");
+  //	xhr.setRequestHeader("Content-Type", file.type);
+  xhr.setRequestHeader("X-File-Name", file.name);
+  xhr.send(file); // Simple!
+
+  function onloadstartHandler(evt) {
+    $('#upload-status').html('Upload started!');
+    $('#file_name').html(file.name);
+    $('#file_type').html(file.type);
+  }
+
+  function onloadHandler(evt) {
+    $('#upload-status').html('Upload successful!');
+  }
+
+  function onprogressHandler(evt) {
+    var percent = evt.loaded/evt.total*100;
+    $('#progress').html('Progress: ' + percent + '%');
+  }
+
+  function onreadystatechangeHandler(evt) {
+    var status = null;
+
+    try {
+      status = evt.target.status;
+    }
+    catch(e) {
+      return;
+    }
+
+    // Once the file status is correct and we have the JSON of the file from the server
+    if (status == '201' && evt.target.responseText) {
+      $('#result').html('<p>The server saw it as:</p><pre>' + evt.target.responseText + '</pre>');
+      $('#upload_link').css('display','');
+      $('#file_link').attr("href",'/'+file.name);
+      var response=JSON.parse(evt.target.responseText);
+      var hidden_field = $('<input>').attr('type','hidden').attr('name','sha1sum').val(response.filename);
+      hidden_field.appendTo('form#kokot');
+    }
+  }
+}
+</script>
+</body>
+</html>
