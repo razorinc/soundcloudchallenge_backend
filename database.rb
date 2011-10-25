@@ -11,12 +11,12 @@ DataMapper.setup(:default, "sqlite3://#{DATABASE_FILE}")
 
 class FileUpload
 
-	include DataMapper::Resource
+  include DataMapper::Resource
 
-	property :id, Serial
-	property :file_name, String
-	property :sha1sum, String
-	property :comment, Text
+  property :id, Serial
+  property :file_name, String
+  property :sha1sum, String
+  property :comment, Text
 end
 
 (DataMapper.auto_upgrade!;puts "Database initialized" ) unless File.exists?(DATABASE_FILE)
