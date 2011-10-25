@@ -9,7 +9,7 @@ DATABASE_FILE = "#{Dir.pwd}/soundcloud.sqlite3"
 DataMapper::Logger.new($stdout, :debug)
 DataMapper.setup(:default, "sqlite3://#{DATABASE_FILE}")
 
-class FileUpload 
+class FileUpload
 
 	include DataMapper::Resource
 
@@ -21,6 +21,3 @@ end
 
 (DataMapper.auto_upgrade!;puts "Database initialized" ) unless File.exists?(DATABASE_FILE)
 
-##class Comment
-##	property :comment 
-##end
