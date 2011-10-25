@@ -6,7 +6,7 @@ require 'dm-migrations'
 
 DATABASE_FILE = "#{Dir.pwd}/soundcloud.sqlite3"
 
-DataMapper::Logger.new($stdout, :debug)
+#DataMapper::Logger.new($stdout, :debug)
 DataMapper.setup(:default, "sqlite3://#{DATABASE_FILE}")
 
 class FileUpload
