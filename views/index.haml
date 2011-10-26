@@ -19,21 +19,21 @@
     #result
     %form#kokot{:action => "/comment", :method => "POST"}
       %textarea{:cols => "80", :name => "comment", :rows => "5"}
-          
-      %input{:name => "submit", :type => "Submit", :value => "Mandalo!"}
+
+      %input{:name => "submit", :disabled=>"disabled", :type => "Submit", :value => "Mandalo!"}
     %h3 last uploads
     %ul#comments
       - @uploads.each do |file|
         %li.comment
           %span
             #{file.comment}
-          %a{:href=>"/#{file.file_name}"} Uploaded file 
+          %a{:href=>"/#{file.file_name}"} Uploaded file
 
     :javascript
       document.getElementById('the-file').onchange = function () {
         var fileInput = document.getElementById('the-file');
         var file = fileInput.files[0];
-      
+
         var xhr = new XMLHttpRequest();
         xhr.upload.addEventListener('loadstart', onloadstartHandler, false);
         xhr.upload.addEventListener('progress', onprogressHandler, false);
@@ -44,32 +44,32 @@
         //	xhr.setRequestHeader("Content-Type", file.type);
         xhr.setRequestHeader("X-File-Name", file.name);
         xhr.send(file); // Simple!
-      
+
         function onloadstartHandler(evt) {
           $('#upload-status').html('Upload started!');
           $('#file_name').html(file.name);
           $('#file_type').html(file.type);
         }
-      
+
         function onloadHandler(evt) {
           $('#upload-status').html('Upload successful!');
         }
-      
+
         function onprogressHandler(evt) {
           var percent = evt.loaded/evt.total*100;
           $('#progress').html('Progress: ' + percent + '%');
         }
-      
+
         function onreadystatechangeHandler(evt) {
           var status = null;
-      
+
           try {
             status = evt.target.status;
           }
           catch(e) {
             return;
           }
-      
+
           // Once the file status is correct and we have the JSON of the file from the server
           if (status == '201' && evt.target.responseText) {
             $('#result').html('The server saw it as:' + evt.target.responseText + '');
@@ -77,7 +77,13 @@
             $('#file_link').attr("href",'/'+file.name);
             var response=JSON.parse(evt.target.responseText);
             var hidden_field = $('<input>').attr('type','hidden').attr('name','sha1sum').val(response.filename);
-            hidden_field.appendTo('form#kokot');
+            if($('input[name=sha1sum]').length>0)
+            {
+              $('input[name=sha1sum]').val(response.filename)
+            }else{
+              hidden_field.appendTo('form#kokot');
+            }
+            $("input[type=submit]").removeAttr("disabled");
           }
         }
       }

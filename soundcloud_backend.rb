@@ -1,9 +1,15 @@
 require 'sinatra'
+require 'haml'
 require 'json'
 require 'lib/rack/raw_upload'
 require 'fileutils'
 require 'database'
 require 'digest/sha1'
+
+
+before do
+  halt 404 if request.path_info.include?("favico")
+end
 
 get '/' do
   @uploads=FileUpload.all
@@ -20,8 +26,8 @@ post '/' do
   sha1sum = Digest::SHA1.hexdigest(uploaded_path_file)
   # This move the file from the temporary directory to the public directory
   (FileUtils.mv(tempFile, uploaded_path_file);puts "File not existent" ) unless File.exists?(uploaded_path_file)
-  status = FileUpload.create(:file_name=>filename,:sha1sum=>sha1sum)
-  if status
+  status = FileUpload::new(:file_name=>filename,:sha1sum=>sha1sum)
+  if status.save
     puts "Creato"
   else
     puts "Non creato"
@@ -37,7 +43,7 @@ end
 
 
 post '/comment' do
-  puts "|#{params.inspect}|".center(50,'-')
+  puts "|#{params.inspect}|".center(80,'-')
   current_file = FileUpload.first(:sha1sum=>params[:sha1sum]).update(:comment=>params[:comment])
   if current_file
     puts "Aggiunto il commento al file"

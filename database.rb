@@ -19,5 +19,6 @@ class FileUpload
   property :comment, Text
 end
 
-(DataMapper.auto_upgrade!;puts "Database initialized" ) unless File.exists?(DATABASE_FILE)
+DataMapper.auto_upgrade!
+(DataMapper.auto_migrate!;puts "Database initialized" ) unless File.exists?(DATABASE_FILE)
 
